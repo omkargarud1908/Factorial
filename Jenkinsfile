@@ -4,58 +4,65 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/omkargarud1908/Factorial.git'
+                git 'https://github.com/omkargarud1908/Factorial.git'
             }
         }
+
         stage('Build') {
             steps {
-                sh 'javac Factorial.java'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean package'
+                    } else {
+                        bat 'mvn clean package'
+                    }
+                }
             }
         }
 
         stage('Test') {
             steps {
                 script {
-                    def output = sh(script: 'java Factorial', returnStdout: true).trim()
-                    echo output
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
                 }
             }
         }
 
         stage('Package as WAR') {
             steps {
-                sh '''
-                mkdir -p webapp/WEB-INF/classes
-                cp Factorial.class webapp/WEB-INF/classes/
-                jar cvf factorial.war -C webapp .
-                '''
+                script {
+                    if (isUnix()) {
+                        sh 'mvn package'
+                    } else {
+                        bat 'mvn package'
+                    }
+                }
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                sh '''
-                curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \
-                --user admin:admin
-                '''
+                script {
+                    def tomcatPath = 'C:\\Tomcat' // Change this path accordingly
+                    if (isUnix()) {
+                        sh 'cp target/*.war /path/to/tomcat/webapps/'
+                    } else {
+                        bat "copy target\\*.war ${tomcatPath}\\webapps\\"
+                    }
+                }
             }
         }
     }
 
     post {
-        success {
-            emailext(
-                to: 'omkargarud8833@gmail.com',
-                subject: 'Jenkins Build Success',
-                body: 'The factorial application has been successfully built and deployed to Tomcat.'
-            )
-        }
         failure {
-            emailext(
-                to: 'omkargarud8833@gmail.com',
-                subject: 'Jenkins Build Failed',
-                body: 'The build or deployment process failed. Please check the logs.'
-            )
+            emailext subject: 'Build Failed',
+                    body: 'The build has failed. Please check Jenkins logs.',
+                    to: 'omkargarud8833@gmail.com'
         }
     }
 }
