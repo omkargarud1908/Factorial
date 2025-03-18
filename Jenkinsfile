@@ -38,12 +38,12 @@ pipeline {
 
     post {
         success {
-            mail to: 'omkargarud8833@example.com',
+            mail to: 'omkargarud8833@gmail.com',
                  subject: 'Jenkins Build Success',
                  body: 'The build and deployment of the factorial application were successful.'
         }
         failure {
-            mail to: 'omkargarud8833@example.com',
+            mail to: 'omkargarud8833@gmail.com',
                  subject: 'Jenkins Build Failed',
                  body: 'The build or deployment process failed. Please check the logs.'
         }
