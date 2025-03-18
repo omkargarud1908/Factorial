@@ -35,10 +35,7 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                sh '''
-                curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \
-                --user admin:admin
-                '''
+                sh '''curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \--user admin:admin'''
             }
         }
     }
