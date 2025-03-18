@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/omkargarud1908/Factorial.git' 
+                git 'https://github.com/omkargarud1908/Factorial.git'
             }
         }
 
@@ -23,29 +23,40 @@ pipeline {
             }
         }
 
-        stage('Package') {
+        stage('Package as WAR') {
             steps {
-                sh 'jar cf factorial.jar Factorial.class'
+                sh '''
+                mkdir -p webapp/WEB-INF/classes
+                cp Factorial.class webapp/WEB-INF/classes/
+                jar cvf factorial.war -C webapp .
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Tomcat') {
             steps {
-                sh 'scp factorial.jar user@yourserver:/opt/deploy/'
+                sh '''
+                curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \
+                --user admin:admin
+                '''
             }
         }
     }
 
     post {
         success {
-            mail to: 'omkargarud8833@gmail.com',
-                 subject: 'Jenkins Build Success',
-                 body: 'The build and deployment of the factorial application were successful.'
+            emailext(
+                to: 'omkargarud8833@gmail.com',
+                subject: 'Jenkins Build Success',
+                body: 'The factorial application has been successfully built and deployed to Tomcat.'
+            )
         }
         failure {
-            mail to: 'omkargarud8833@gmail.com',
-                 subject: 'Jenkins Build Failed',
-                 body: 'The build or deployment process failed. Please check the logs.'
+            emailext(
+                to: 'omkargarud8833@gmail.com',
+                subject: 'Jenkins Build Failed',
+                body: 'The build or deployment process failed. Please check the logs.'
+            )
         }
     }
 }
