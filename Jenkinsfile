@@ -62,7 +62,7 @@ pipeline {
         failure {
             emailext subject: 'Build Failed',
                     body: 'The build has failed. Please check Jenkins logs.',
-                    to: 'omkargarud8833@gmail.com'
+                    to: 'omkargarud495@gmail.com'
         }
     }
 }
