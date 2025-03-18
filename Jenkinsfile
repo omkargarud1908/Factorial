@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/omkargarud1908/Factorial.git'
-            }
+                git branch: 'main', url: 'https://github.com/omkargarud1908/Factorial.git'
+                }
         }
 
         stage('Build') {
