@@ -46,14 +46,14 @@ pipeline {
     post {
         success {
             emailext(
-                to: 'omkargarud495@gmail.com',
+                to: 'omkargarud8833@gmail.com',
                 subject: 'Jenkins Build Success',
                 body: 'The factorial application has been successfully built and deployed to Tomcat.'
             )
         }
         failure {
             emailext(
-                to: 'omkargarud495@gmail.com',
+                to: 'omkargarud8833@gmail.com',
                 subject: 'Jenkins Build Failed',
                 body: 'The build or deployment process failed. Please check the logs.'
             )
