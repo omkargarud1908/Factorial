@@ -4,65 +4,59 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/omkargarud1908/Factorial.git'
-                }
+                git 'https://github.com/omkargarud1908/Factorial.git'
+            }
         }
 
         stage('Build') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn clean package'
-                    } else {
-                        bat 'mvn clean package'
-                    }
-                }
+                sh 'javac Factorial.java'
             }
         }
 
         stage('Test') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'mvn test'
-                    } else {
-                        bat 'mvn test'
-                    }
+                    def output = sh(script: 'java Factorial', returnStdout: true).trim()
+                    echo output
                 }
             }
         }
 
         stage('Package as WAR') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn package'
-                    } else {
-                        bat 'mvn package'
-                    }
-                }
+                sh '''
+                mkdir -p webapp/WEB-INF/classes
+                cp Factorial.class webapp/WEB-INF/classes/
+                jar cvf factorial.war -C webapp .
+                '''
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                script {
-                    def tomcatPath = 'C:\\Tomcat' // Change this path accordingly
-                    if (isUnix()) {
-                        sh 'cp target/*.war /path/to/tomcat/webapps/'
-                    } else {
-                        bat "copy target\\*.war ${tomcatPath}\\webapps\\"
-                    }
-                }
+                sh '''
+                curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \
+                --user admin:admin
+                '''
             }
         }
     }
 
     post {
+        success {
+            emailext(
+                to: 'omkargarud495@gmail.com',
+                subject: 'Jenkins Build Success',
+                body: 'The factorial application has been successfully built and deployed to Tomcat.'
+            )
+        }
         failure {
-            emailext subject: 'Build Failed',
-                    body: 'The build has failed. Please check Jenkins logs.',
-                    to: 'omkargarud495@gmail.com'
+            emailext(
+                to: 'omkargarud495@gmail.com',
+                subject: 'Jenkins Build Failed',
+                body: 'The build or deployment process failed. Please check the logs.'
+            )
         }
     }
 }
