@@ -10,14 +10,15 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'javac Factorial.java'
+                bat 'javac Factorial.java'  // Use bat instead of sh
             }
         }
 
         stage('Test') {
             steps {
                 script {
-                    def output = sh(script: 'java Factorial', returnStdout: true).trim()
+                    // Use bat for Windows
+                    def output = bat(script: 'java Factorial', returnStdout: true).trim()
                     echo output
                 }
             }
@@ -25,38 +26,24 @@ pipeline {
 
         stage('Package as WAR') {
             steps {
-                sh '''
-                mkdir -p webapp/WEB-INF/classes
-                cp Factorial.class webapp/WEB-INF/classes/
-                jar cvf factorial.war -C webapp .
+                bat '''  // Use bat and Windows commands
+                    mkdir webapp\\WEB-INF\\classes
+                    copy Factorial.class webapp\\WEB-INF\\classes\\
+                    jar cvf factorial.war -C webapp .
                 '''
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                sh '''
-                curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" \
-                --user admin:admin
+                bat '''  // Use bat for Windows
+                    curl --upload-file factorial.war "http://localhost:8080/manager/text/deploy?path=/factorial&update=true" --user admin:admin
                 '''
             }
         }
     }
 
-    post {
-        success {
-            emailext(
-                to: 'omkargarud8833@gmail.com',
-                subject: 'Jenkins Build Success',
-                body: 'The factorial application has been successfully built and deployed to Tomcat.'
-            )
-        }
-        failure {
-            emailext(
-                to: 'omkargarud8833@gmail.com',
-                subject: 'Jenkins Build Failed',
-                body: 'The build or deployment process failed. Please check the logs.'
-            )
-        }
+    post { 
+        // ... (keep post section as-is)
     }
 }
